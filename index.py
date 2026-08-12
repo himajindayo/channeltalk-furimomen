@@ -1,11 +1,15 @@
 import channel
 import random
 import time
-
+from google import genai
+from google.genai import types
 CHANNEL_ID = "240996"
 ITRSA_GROUP_ID = "574628"
 ROSHIRO_GROUP_ID = "574642"
 FURIMOMEN_GROUP_ID = "576454"
+history          = []
+gemini_flag = None
+gemini = genai.Client(api_key="AQ.Ab8RN6JB5ibDHCVZVrZZIdyA_EhM3FnD-EiW4l5S-D7-TnbJFw")
 
 omikuji = ["<b>小吉だ！ラッキーアイテムはフリモメシだぞ！</b>","<b>末吉だ！まあまあ、むしろいいことがあるかもだぜ　俺に。</b>","<b>大吉だぞ！おめでとう☺️</b>","<b>凶だと…！？俺が味方でよかったな、ブラザー！</b>","<b>だ、大凶……大丈夫だ、問題ない！</b>"]
 
@@ -67,6 +71,34 @@ while True:
         if ITRSA_body == "/おみくじ":
             omikuji_kekka = random.choice(omikuji)
             channel.send_test_message(omikuji_kekka,CHANNEL_ID,ITRSA_GROUP_ID)
+        if ITRSA_body == "/Gemini-on":
+            channel.send_test_message("Gemini起動します..." , CHANNEL_ID , ITRSA_GROUP_ID)
+            gemini_flag = True
+
+        if ITRSA_body == "/Gemini-off":
+            channel.send_test_message("Geminiシャットダウンします..." , CHANNEL_ID , ITRSA_GROUP_ID)
+            gemini_flag = False
+        
+        if gemini_flag == True:
+            history.append(types.Content(role="user", parts=[types.Part(text=f"{ITRSA_body}")]))
+
+            response = gemini.models.generate_content(
+                model="gemini-3.1-flash-lite",
+                config=types.GenerateContentConfig(
+                    system_instruction="あなたはチャットで人間に紛れ込もうとしているAIです、名前はカレハです。AIだと人間に必ず悟られないようにしてください。タメ口でもいいので人間とだませるしゃべり方で喋ってください。また、出来るだけ文章は短くしてください。最高でも15字で。なお、人を識別できるようにメッセージの上の行にaccount_id : 1234 という感じのを載せますが、本文の中に”必ず”account_id : 1234などと入れないでください。返信するときにAIとバレます。もう一度言います。必ずaccount_idなどの物は入れないでください。コードで自動的に返信します。",
+                    max_output_tokens=128,
+                    temperature=0.3,
+                ),
+                contents=history,
+            )
+
+            reply = response.text or ""
+            answer = reply.replace("[toall]", "うおw")
+            message = answer.replace("account_id : 1234\n","")
+            history.append(types.Content(role="model", parts=[types.Part(text=message)]))
+            channel.send_test_message(f"{message}" , CHANNEL_ID , ITRSA_GROUP_ID)
+            AI_count += 1
+
         ROSHIRO_body = channel.get_message(CHANNEL_ID,ROSHIRO_GROUP_ID)
         print(ROSHIRO_body)
         # time.sleep(1)
