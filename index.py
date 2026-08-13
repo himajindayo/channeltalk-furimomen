@@ -1,15 +1,14 @@
 import channel
 import random
 import time
-from google import genai
-from google.genai import types
+from yt_stream import get_stream_links
 CHANNEL_ID = "240996"
 ITRSA_GROUP_ID = "574628"
 ROSHIRO_GROUP_ID = "574642"
 FURIMOMEN_GROUP_ID = "576454"
+YOUTUBE_DL_GROUP_ID = "597067"
 history          = []
 gemini_flag = None
-gemini = genai.Client(api_key="AQ.Ab8RN6JB5ibDHCVZVrZZIdyA_EhM3FnD-EiW4l5S-D7-TnbJFw")
 
 omikuji = ["<b>小吉だ！ラッキーアイテムはフリモメシだぞ！</b>","<b>末吉だ！まあまあ、むしろいいことがあるかもだぜ　俺に。</b>","<b>大吉だぞ！おめでとう☺️</b>","<b>凶だと…！？俺が味方でよかったな、ブラザー！</b>","<b>だ、大凶……大丈夫だ、問題ない！</b>"]
 
@@ -65,20 +64,24 @@ while True:
         ITRSA_body = channel.get_message(CHANNEL_ID,ITRSA_GROUP_ID)
         print(ITRSA_body)
         # time.sleep(1)
+        if ITRSA_body.count(": bot") >= 1:
+            print("botのコメなのでスキップ")
+            continue
+
         if ITRSA_body == "/goroku":
             goroku = random.choice(all)
             channel.send_test_message(goroku,CHANNEL_ID,ITRSA_GROUP_ID)
         if ITRSA_body == "/おみくじ":
             omikuji_kekka = random.choice(omikuji)
             channel.send_test_message(omikuji_kekka,CHANNEL_ID,ITRSA_GROUP_ID)
-        if ITRSA_body == "/Gemini-on":
+        """if ITRSA_body == "/Gemini-on":
             channel.send_test_message("Gemini起動します..." , CHANNEL_ID , ITRSA_GROUP_ID)
             gemini_flag = True
 
         if ITRSA_body == "/Gemini-off":
             channel.send_test_message("Geminiシャットダウンします..." , CHANNEL_ID , ITRSA_GROUP_ID)
             gemini_flag = False
-        
+            history = []
         if gemini_flag == True:
             history.append(types.Content(role="user", parts=[types.Part(text=f"{ITRSA_body}")]))
 
@@ -93,11 +96,12 @@ while True:
             )
 
             reply = response.text or ""
-            answer = reply.replace("[toall]", "うおw")
+            answer = reply.replace("@all", "うおw")
             message = answer.replace("account_id : 1234\n","")
             history.append(types.Content(role="model", parts=[types.Part(text=message)]))
+            message += ": bot"
             channel.send_test_message(f"{message}" , CHANNEL_ID , ITRSA_GROUP_ID)
-            AI_count += 1
+            AI_count += 1"""
 
         ROSHIRO_body = channel.get_message(CHANNEL_ID,ROSHIRO_GROUP_ID)
         print(ROSHIRO_body)
@@ -112,6 +116,13 @@ while True:
         if FURIMOMEN_body == "/goroku":
             goroku = random.choice(all)
             channel.send_test_message(goroku,CHANNEL_ID,FURIMOMEN_GROUP_ID)
+
+        YOUTUBE_DL_BODY = channel.get_message(CHANNEL_ID,YOUTUBE_DL_GROUP_ID)
+        print(YOUTUBE_DL_BODY)
+        if YOUTUBE_DL_BODY.count("https://www.youtube.com") >= 1:
+            stream_link = get_stream_links(YOUTUBE_DL_BODY)
+            response = f"<link type=\"url\" value=\"{stream_link.url}\">{stream_link.title}の動画リンク</link>"
+            channel.send_test_message(response , CHANNEL_ID , YOUTUBE_DL_GROUP_ID)
 
     except Exception as e:
         print(e)
