@@ -2,6 +2,7 @@ import channel
 import random
 import time
 from yt_stream import get_stream_links
+import threading
 CHANNEL_ID = "240996"
 ITRSA_GROUP_ID = "574628"
 ROSHIRO_GROUP_ID = "574642"
@@ -61,68 +62,84 @@ all =["<b>呼ばれてないけど飛び出たフリーモーションメーー�
 
 while True:
     try:
-        ITRSA_body = channel.get_message(CHANNEL_ID,ITRSA_GROUP_ID)
-        print(ITRSA_body)
-        # time.sleep(1)
-        if ITRSA_body.count(": bot") >= 1:
-            print("botのコメなのでスキップ")
-            continue
+        def ITRSA():
+            ITRSA_body = channel.get_message(CHANNEL_ID,ITRSA_GROUP_ID)
+            print(ITRSA_body)
+            # time.sleep(1)
+            if ITRSA_body.count(": bot") >= 1:
+                print("botのコメなのでスキップ")
+                pass
 
-        if ITRSA_body == "/goroku":
-            goroku = random.choice(all)
-            channel.send_test_message(goroku,CHANNEL_ID,ITRSA_GROUP_ID)
-        if ITRSA_body == "/おみくじ":
-            omikuji_kekka = random.choice(omikuji)
-            channel.send_test_message(omikuji_kekka,CHANNEL_ID,ITRSA_GROUP_ID)
-        """if ITRSA_body == "/Gemini-on":
-            channel.send_test_message("Gemini起動します..." , CHANNEL_ID , ITRSA_GROUP_ID)
-            gemini_flag = True
+            if ITRSA_body == "/goroku":
+                goroku = random.choice(all)
+                channel.send_test_message(goroku,CHANNEL_ID,ITRSA_GROUP_ID)
+            if ITRSA_body == "/おみくじ":
+                omikuji_kekka = random.choice(omikuji)
+                channel.send_test_message(omikuji_kekka,CHANNEL_ID,ITRSA_GROUP_ID)
+            """if ITRSA_body == "/Gemini-on":
+                channel.send_test_message("Gemini起動します..." , CHANNEL_ID , ITRSA_GROUP_ID)
+                gemini_flag = True
 
-        if ITRSA_body == "/Gemini-off":
-            channel.send_test_message("Geminiシャットダウンします..." , CHANNEL_ID , ITRSA_GROUP_ID)
-            gemini_flag = False
-            history = []
-        if gemini_flag == True:
-            history.append(types.Content(role="user", parts=[types.Part(text=f"{ITRSA_body}")]))
+            if ITRSA_body == "/Gemini-off":
+                channel.send_test_message("Geminiシャットダウンします..." , CHANNEL_ID , ITRSA_GROUP_ID)
+                gemini_flag = False
+                history = []
+            if gemini_flag == True:
+                history.append(types.Content(role="user", parts=[types.Part(text=f"{ITRSA_body}")]))
 
-            response = gemini.models.generate_content(
-                model="gemini-3.1-flash-lite",
-                config=types.GenerateContentConfig(
-                    system_instruction="あなたはチャットで人間に紛れ込もうとしているAIです、名前はカレハです。AIだと人間に必ず悟られないようにしてください。タメ口でもいいので人間とだませるしゃべり方で喋ってください。また、出来るだけ文章は短くしてください。最高でも15字で。なお、人を識別できるようにメッセージの上の行にaccount_id : 1234 という感じのを載せますが、本文の中に”必ず”account_id : 1234などと入れないでください。返信するときにAIとバレます。もう一度言います。必ずaccount_idなどの物は入れないでください。コードで自動的に返信します。",
-                    max_output_tokens=128,
-                    temperature=0.3,
-                ),
-                contents=history,
-            )
+                response = gemini.models.generate_content(
+                    model="gemini-3.1-flash-lite",
+                    config=types.GenerateContentConfig(
+                        system_instruction="あなたはチャットで人間に紛れ込もうとしているAIです、名前はカレハです。AIだと人間に必ず悟られないようにしてください。タメ口でもいいので人間とだませるしゃべり方で喋ってください。また、出来るだけ文章は短くしてください。最高でも15字で。なお、人を識別できるようにメッセージの上の行にaccount_id : 1234 という感じのを載せますが、本文の中に”必ず”account_id : 1234などと入れないでください。返信するときにAIとバレます。もう一度言います。必ずaccount_idなどの物は入れないでください。コードで自動的に返信します。",
+                        max_output_tokens=128,
+                        temperature=0.3,
+                    ),
+                    contents=history,
+                )
 
-            reply = response.text or ""
-            answer = reply.replace("@all", "うおw")
-            message = answer.replace("account_id : 1234\n","")
-            history.append(types.Content(role="model", parts=[types.Part(text=message)]))
-            message += ": bot"
-            channel.send_test_message(f"{message}" , CHANNEL_ID , ITRSA_GROUP_ID)
-            AI_count += 1"""
-
-        ROSHIRO_body = channel.get_message(CHANNEL_ID,ROSHIRO_GROUP_ID)
-        print(ROSHIRO_body)
-        # time.sleep(1)
-        if ROSHIRO_body == "/goroku":
-            goroku = random.choice(all)
-            channel.send_test_message(goroku,CHANNEL_ID,ROSHIRO_GROUP_ID)
-
-        FURIMOMEN_body = channel.get_message(CHANNEL_ID,FURIMOMEN_GROUP_ID)
-        print(FURIMOMEN_body)
-        # time.sleep(1)
-        if FURIMOMEN_body == "/goroku":
-            goroku = random.choice(all)
-            channel.send_test_message(goroku,CHANNEL_ID,FURIMOMEN_GROUP_ID)
-
+                reply = response.text or ""
+                answer = reply.replace("@all", "うおw")
+                message = answer.replace("account_id : 1234\n","")
+                history.append(types.Content(role="model", parts=[types.Part(text=message)]))
+                message += ": bot"
+                channel.send_test_message(f"{message}" , CHANNEL_ID , ITRSA_GROUP_ID)
+                AI_count += 1"""
+        def ROSHIRO():
+            ROSHIRO_body = channel.get_message(CHANNEL_ID,ROSHIRO_GROUP_ID)
+            print(ROSHIRO_body)
+            # time.sleep(1)
+            if ROSHIRO_body == "/goroku":
+                goroku = random.choice(all)
+                channel.send_test_message(goroku,CHANNEL_ID,ROSHIRO_GROUP_ID)
+            if ROSHIRO_body == "/おみくじ":
+                omikuji_kekka = random.choice(omikuji)
+                channel.send_test_message(omikuji_kekka,CHANNEL_ID,ROSHIRO_GROUP_ID)
+        def FURIMOMEN():
+            FURIMOMEN_body = channel.get_message(CHANNEL_ID,FURIMOMEN_GROUP_ID)
+            print(FURIMOMEN_body)
+            # time.sleep(1)
+            if FURIMOMEN_body == "/goroku":
+                goroku = random.choice(all)
+                channel.send_test_message(goroku,CHANNEL_ID,FURIMOMEN_GROUP_ID)
+            if FURIMOMEN_body == "@フリモメンだよbot おみくじ":
+                omikuji_kekka = random.choice(omikuji)
+                channel.send_test_message(omikuji_kekka,CHANNEL_ID,FURIMOMEN_GROUP_ID)
         YOUTUBE_DL_BODY = channel.get_message(CHANNEL_ID,YOUTUBE_DL_GROUP_ID)
-        print(YOUTUBE_DL_BODY)
-        if YOUTUBE_DL_BODY.count("https://www.youtube.com") >= 1:
-            stream_link = get_stream_links(YOUTUBE_DL_BODY)
-            response = f"<link type=\"url\" value=\"{stream_link.url}\">{stream_link.title}の動画リンク</link>"
-            channel.send_test_message(response , CHANNEL_ID , YOUTUBE_DL_GROUP_ID)
+        def YOUTUBE_DL():
+            print(YOUTUBE_DL_BODY)
+            if YOUTUBE_DL_BODY.count("https://www.youtube.com") >= 1:
+                stream_link = get_stream_links(YOUTUBE_DL_BODY)
+                response = f"<link type=\"url\" value=\"{stream_link.url}\">{stream_link.title}の動画リンク</link>"
+                channel.send_test_message(response , CHANNEL_ID , YOUTUBE_DL_GROUP_ID)
 
+        thread_ITRSA = threading.Thread(target=ITRSA)
+        thread_ROSHIRO = threading.Thread(target=ROSHIRO)
+        thread_FURIMOMEN = threading.Thread(target=FURIMOMEN)
+
+        thread_ITRSA.start()
+        thread_ROSHIRO.start()
+        thread_FURIMOMEN.start()
+
+        YOUTUBE_DL()
     except Exception as e:
         print(e)
